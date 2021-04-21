@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Microwave.Test.Integration
 {
-    public class Tests2
+    public class IT2
     {
         //private Door _door;
         //private Button _button;
@@ -14,7 +14,7 @@ namespace Microwave.Test.Integration
         //private Output _output;
         //private PowerTube _powerTube;
         //private Timer _timer;
-        //private CookController _cookController;
+        private CookController _cookController;
 
         [SetUp]
         public void Setup()
