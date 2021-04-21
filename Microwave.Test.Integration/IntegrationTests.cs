@@ -14,24 +14,28 @@ namespace Microwave.Test.Integration
 
         }
 
+        // Camilla
         [Test]
         public void Test1()
         {
             Assert.Pass();
         }
 
+        // Emil
         [Test]
         public void Test2()
         {
             Assert.Pass();
         }
 
+        // Thomas
         [Test]
         public void Test3()
         {
             Assert.Pass();
         }
 
+        // Simon
         [Test]
         public void Test4()
         {
