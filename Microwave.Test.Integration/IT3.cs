@@ -7,19 +7,20 @@ namespace Microwave.Test.Integration
 {
     public class Tests3
     {
-        //private Door _door;
-        //private Button _button;
-        //private Light _light;
-        //private Display _display;
-        //private Output _output;
-        //private PowerTube _powerTube;
-        //private Timer _timer;
-        //private CookController _cookController;
+        private Door _door;
+        private Button _button;
+        private Light _light;
+        private Display _display;
+        private Output _output;
+        private PowerTube _powerTube;
+        private Timer _timer;
+        private CookController _cookController;
+        private UserInterface _sut;
 
         [SetUp]
         public void Setup()
         {
-
+            _output = 
         }
 
         // Thomas
