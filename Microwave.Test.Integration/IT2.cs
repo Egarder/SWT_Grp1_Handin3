@@ -18,7 +18,7 @@ namespace Microwave.Test.Integration
         private IOutput _outputFake;
         private IPowerTube _powerTubeFake;
         private ITimer _timerFake;
-        private UserInterface _userInterface;
+        private UserInterface _SUT;
         private CookController _cookController;
 
         [SetUp]
@@ -34,14 +34,28 @@ namespace Microwave.Test.Integration
             _powerTubeFake = Substitute.For<IPowerTube>();
             _timerFake = Substitute.For<ITimer>();
             _cookController = new CookController(_timerFake,_displayFake,_powerTubeFake);
-            _userInterface = new UserInterface(_powerButton, _timerButton, _startCancelButton,_door,_displayFake,_light,_cookController);
+            _SUT = new UserInterface(_powerButton, _timerButton, _startCancelButton,_door,_displayFake,_light,_cookController);
         }
 
         // Emil
         [Test]
-        public void MainScenario()
+        public void StartMicrowaveWhenStopped()
         {
             Assert.Pass();
         }
+
+        [Test]
+        public void StopMicrowaveWhenStarted()
+        {
+            Assert.Pass();
+        }
+
+        [Test]
+        public void StartMicrowaveThenTimeOutStop()
+        {
+            Assert.Pass();
+        }
+
+
     }
 }
