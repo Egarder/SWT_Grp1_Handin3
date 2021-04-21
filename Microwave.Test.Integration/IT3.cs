@@ -1,33 +1,59 @@
+using System;
 using System.Xml.Linq;
 using Microwave.Classes.Boundary;
 using Microwave.Classes.Controllers;
+using Microwave.Classes.Interfaces;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Microwave.Test.Integration
 {
     public class Tests3
     {
-        private Door _door;
-        private Button _button;
-        private Light _light;
-        private Display _display;
-        private Output _output;
-        private PowerTube _powerTube;
-        private Timer _timer;
-        private CookController _cookController;
-        private UserInterface _sut;
+        private IDoor _door;
+        private IButton _powerButton;
+        private IButton _timeButton;
+        private IButton _startCancelButton;
+        private ILight _light;
+        private IDisplay _display;
+        private IOutput _output;
+        private IPowerTube _powerTube;
+        private ITimer _timer;
+        private ICookController _cooker;
+        private IUserInterface _sut;
 
         [SetUp]
         public void Setup()
         {
-            _output = 
+            _output = Substitute.For<IOutput>();
+
+            _powerButton = new Button();
+            _timeButton = new Button();
+            _startCancelButton = new Button();
+            _door = new Door();
+            _light = new Light(_output);
+
+            _timer = new Timer();
+            _display = new Display(_output);
+            _powerTube = new PowerTube(_output);
+
+            _cooker = new CookController(_timer, _display, _powerTube);
+
+            _sut = new UserInterface(_powerButton, _timeButton, _startCancelButton, _door, _display, _light, _cooker);
         }
 
         // Thomas
         [Test]
         public void Test1()
         {
-            Assert.Pass();
+            // Act
+            _door.Open();
+            _door.Close();
+            _powerButton.Press();
+            _timeButton.Press();
+            _startCancelButton.Press();
+
+            
         }
     }
 }
