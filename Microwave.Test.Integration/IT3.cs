@@ -49,11 +49,24 @@ namespace Microwave.Test.Integration
             // Act
             _door.Open();
             _door.Close();
+            
             _powerButton.Press();
+            _powerButton.Press();
+
+            _timeButton.Press();
+            _timeButton.Press();
             _timeButton.Press();
             _startCancelButton.Press();
 
-            
+            _output.Received(2).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
+
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("01:00")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("02:00")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
         }
     }
 }
