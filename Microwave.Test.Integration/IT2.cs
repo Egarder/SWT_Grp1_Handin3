@@ -39,23 +39,52 @@ namespace Microwave.Test.Integration
 
         // Emil
         [Test]
-        public void StartMicrowaveWhenStopped()
+        public void OpensDoorStateReady()
+        {
+            _door.Open();
+            
+            Assert.Pass();
+        }
+        [Test]
+        public void OpensDoorStateCooking()
+        {
+            _door.Open();
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void ClosesDoorStateReady()
+        {
+            _door.Open();
+            _door.Close();
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void PowerBtnPressedStateDoorIsOpen()
         {
             Assert.Pass();
         }
 
         [Test]
-        public void StopMicrowaveWhenStarted()
+        public void TimeBtnPressedStateReady()
         {
             Assert.Pass();
         }
 
         [Test]
-        public void StartMicrowaveThenTimeOutStop()
+        public void StartCancelBtnPressedStateReady()
         {
             Assert.Pass();
         }
 
+        [Test]
+        public void StartCancelBtnPressedStateCooking()
+        {
+            Assert.Pass();
+        }
 
     }
 }
