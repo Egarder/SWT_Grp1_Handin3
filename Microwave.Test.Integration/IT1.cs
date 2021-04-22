@@ -7,8 +7,9 @@ using NUnit.Framework;
 
 namespace Microwave.Test.Integration
 {
-    public class Tests1
+    public class IT1
     {
+        // Camilla
         private Door _door;
         private Button _powerButton;
         private Button _timeButton;
@@ -37,7 +38,6 @@ namespace Microwave.Test.Integration
             sut = new UserInterface(_powerButton, _timeButton, _startCancelButton, _door, _display, _light, _cookController);
         }
 
-        // Camilla
         [Test]
         public void Door_OpenCloseDoor_EventRaised()
         {

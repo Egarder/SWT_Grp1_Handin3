@@ -7,6 +7,7 @@ using NUnit.Framework;
 
 namespace Microwave.Test.Integration
 {
+    // Emil
     public class IT2
     {
         private Door _door;
@@ -38,8 +39,6 @@ namespace Microwave.Test.Integration
             _cookController.UI = _SUT;
 
         }
-
-        // Emil
 
 
 

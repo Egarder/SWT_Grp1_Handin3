@@ -12,7 +12,8 @@ using Timer = Microwave.Classes.Boundary.Timer;
 
 namespace Microwave.Test.Integration
 {
-    public class Tests3
+    // Thomas
+    public class IT3
     {
         private IDoor _door;
         private IButton _powerButton;
@@ -73,6 +74,20 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
+        public void PowerButton_ButtonPressedThreeTimes_CorrectOutput()
+        {
+            // Act
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("150 W")));
+        }
+
+        [Test]
         public void TimerButton_ButtonPressedThreeTimes_CorrectOutput()
         {
             // Arrange
@@ -89,6 +104,20 @@ namespace Microwave.Test.Integration
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
         }
 
+        [Test]
+        public void Timer_TimeSetToOneMinueWaitTwoSeconds_OutPutShows58SecondsRemaining()
+        {
+            // Arrange
+            _powerButton.Press();
+
+            // Act
+            _timeButton.Press(); // set time to 1 minute
+            _startCancelButton.Press();
+            Thread.Sleep(2000); // wait 2 seconds to be certain
+
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<String>(text => text.Contains("00:58")));
+        }
 
         [Test]
         public void MainScenario_CorrectOutput()
