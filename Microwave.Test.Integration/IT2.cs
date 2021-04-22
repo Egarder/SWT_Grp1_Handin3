@@ -35,7 +35,8 @@ namespace Microwave.Test.Integration
             _timerFake = Substitute.For<ITimer>();
             _cookController = new CookController(_timerFake,_displayFake,_powerTubeFake);
             _SUT = new UserInterface(_powerButton, _timerButton, _startCancelButton,_door,_displayFake,_light,_cookController);
-            
+            _cookController.UI = _SUT;
+
         }
 
         // Emil
