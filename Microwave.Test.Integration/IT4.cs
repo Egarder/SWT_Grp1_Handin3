@@ -1,370 +1,184 @@
 using System;
-using System.IO;
-using System.Linq;
+using System.Threading;
 using System.Xml.Linq;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Microwave.Classes.Boundary;
 using Microwave.Classes.Controllers;
 using Microwave.Classes.Interfaces;
-using NUnit.Framework;
 using NSubstitute;
+using NUnit.Framework;
+using IOutput = Microwave.Classes.Interfaces.IOutput;
+using Timer = Microwave.Classes.Boundary.Timer;
 
 namespace Microwave.Test.Integration
 {
-    // Simon
+    // Thomas
     public class IT4
     {
-        private UserInterface sut;
+        private IDoor _door;
+        private IButton _powerButton;
+        private IButton _timeButton;
+        private IButton _startCancelButton;
+        private ILight _light;
+        private IDisplay _display;
+        private IOutput _output;
+        private IPowerTube _powerTube;
+        private ITimer _timer;
+        private ICookController _cooker;
+        private IUserInterface _sut;
 
-        private Button powerButton;
-        private Button timeButton;
-        private Button startCancelButton;
-        private StringWriter sw;
-        private Door door;
-
-        private Display display;
-        private Light light;
-
-        private CookController cooker;
-        private Output output;
-        private Timer timer;
-        private PowerTube powerTube;
         [SetUp]
         public void Setup()
         {
-            powerButton = new Button();
-            timeButton = new Button();
-            startCancelButton = new Button();
-            door = new Door();
-            timer = new Timer();
-            output = new Output();
-            powerTube = new PowerTube(output);
-            light = new Light(output);
-            display = new Display(output);
-            cooker = new CookController(timer, display, powerTube);
-            sut = new UserInterface(powerButton, timeButton, startCancelButton, door, display, light, cooker);
-            cooker.UI = sut;
+            _output = Substitute.For<IOutput>();
 
-            sw = new StringWriter();
-            Console.SetOut(sw);
-            Console.SetError(sw);
-        }
+            _powerButton = new Button();
+            _timeButton = new Button();
+            _startCancelButton = new Button();
+            _door = new Door();
+            _light = new Light(_output);
 
-        [Test]
-        public void Ready_DoorOpen_LightOnShowsOnOutput()
-        {
-            // This test that uut has subscribed to door opened, and works correctly
-            // simulating the event through NSubstitute
-            var sw = new StringWriter();
-            Console.SetOut(sw);
-            Console.SetError(sw);
+            _timer = new Timer();
+            _display = new Display(_output);
+            _powerTube = new PowerTube(_output);
 
-            door.Open();
+            _cooker = new CookController(_timer, _display, _powerTube);
 
-            string result = sw.ToString();
-
-            Assert.That(result,Is.EqualTo("Light is turned on\r\n"));
-        }
-
-        [Test]
-        public void DoorOpen_DoorClose_LightOff()
-        {
-            // This test that uut has subscribed to door opened and closed, and works correctly
-            // simulating the event through NSubstitute
-
-            door.Open();
-            door.Close();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Light is turned on\r\nLight is turned off\r\n"));
-        }
-
-        [Test]
-        public void Ready_DoorOpenClose_Ready_PowerIs50()
-        {
-            // This test that uut has subscribed to power button, and works correctly
-            // simulating the events through NSubstitute
-
-            door.Open();
-            door.Close();
-
-            powerButton.Press();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Light is turned on\r\nLight is turned off\r\nDisplay shows: 50 W\r\n"));
-        }
-
-        [Test]
-        public void Ready_2PowerButton_PowerIs100()
-        {
-
-            powerButton.Press();
-            powerButton.Press();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 100 W\r\n"));
-        }
-
-        [Test]
-        public void Ready_14PowerButton_PowerIs700()
-        {
-            for (int i = 1; i <= 14; i++)
-            {
-                powerButton.Press();
-            }
-
-            string result = sw.ToString();
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 100 W\r\nDisplay shows: 150 W\r\nDisplay shows: 200 W\r\nDisplay shows: 250 W\r\nDisplay shows: 300 W\r\nDisplay shows: 350 W\r\nDisplay shows: 400 W\r\nDisplay shows: 450 W\r\nDisplay shows: 500 W\r\nDisplay shows: 550 W\r\nDisplay shows: 600 W\r\nDisplay shows: 650 W\r\nDisplay shows: 700 W\r\n"));
-        }
-
-        [Test]
-        public void Ready_15PowerButton_PowerIs50Again()
-        {
-            for (int i = 1; i <= 15; i++)
-            {
-                powerButton.Press();
-            }
-            string result = sw.ToString();
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 100 W\r\nDisplay shows: 150 W\r\nDisplay shows: 200 W\r\nDisplay shows: 250 W\r\nDisplay shows: 300 W\r\nDisplay shows: 350 W\r\nDisplay shows: 400 W\r\nDisplay shows: 450 W\r\nDisplay shows: 500 W\r\nDisplay shows: 550 W\r\nDisplay shows: 600 W\r\nDisplay shows: 650 W\r\nDisplay shows: 700 W\r\nDisplay shows: 50 W\r\n"));
-        }
-
-        [Test]
-        public void SetPower_CancelButton_DisplayCleared()
-        {
-            // Also checks if TimeButton is subscribed
-            powerButton.Press();
-            // Now in SetPower
-
-            startCancelButton.Press();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay cleared\r\n"));
-        }
-
-        [Test]
-        public void SetPower_DoorOpened_DisplayCleared()
-        {
-            // Also checks if TimeButton is subscribed
-            powerButton.Press();
-            // Now in SetPower
-            door.Open();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nLight is turned on\r\nDisplay cleared\r\n"));
-        }
-
-        [Test]
-        public void SetPower_DoorOpened_LightOn()
-        {
-            // Also checks if TimeButton is subscribed
-            powerButton.Press();
-            // Now in SetPower
-            door.Open();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nLight is turned on\r\nDisplay cleared\r\n"));
-        }
-
-        [Test]
-        public void SetPower_TimeButton_TimeIs1()
-        {
-            // Also checks if TimeButton is subscribed
-            powerButton.Press();
-            // Now in SetPower
-            timeButton.Press();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\n"));
-        }
-
-        [Test]
-        public void SetPower_2TimeButton_TimeIs2()
-        {
-            powerButton.Press();
-            // Now in SetPower
-            timeButton.Press();
-            timeButton.Press();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nDisplay shows: 02:00\r\n"));
-        }
-
-        [Test]
-        public void SetTime_StartButton_CookerIsCalled()
-        {
-            powerButton.Press();
-            // Now in SetPower
-            timeButton.Press();
-            // Now in SetTime
-            startCancelButton.Press();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\n"));
-        }
-
-        [Test]
-        public void SetTime_DoorOpened_DisplayCleared()
-        {
-            powerButton.Press();
-            // Now in SetPower
-            timeButton.Press();
-            // Now in SetTime
-            door.Open();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nDisplay cleared\r\n"));
-        }
-
-        [Test]
-        public void SetTime_DoorOpened_LightOn()
-        {
-            powerButton.Press();
-            // Now in SetPower
-            timeButton.Press();
-            // Now in SetTime
-            door.Open();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nDisplay cleared\r\n"));
-        }
-
-        [Test]
-        public void Ready_PowerAndTime_CookerIsCalledCorrectly()
-        {
-            powerButton.Press();
-            // Now in SetPower
-            powerButton.Press();
-
-            timeButton.Press();
-            // Now in SetTime
-            timeButton.Press();
-
-            // Should call with correct values
-            startCancelButton.Press();
-
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 100 W\r\nDisplay shows: 01:00\r\nDisplay shows: 02:00\r\nLight is turned on\r\nPowerTube works with 100\r\n"));
-        }
-
-        [Test]
-        public void Ready_FullPower_CookerIsCalledCorrectly()
-        {
-            for (int i = 50; i <= 700; i += 50)
-            {
-                powerButton.Press();
-            }
-
-            timeButton.Press();
-            // Now in SetTime
-            var sw2 = new StringWriter();
-            Console.SetOut(sw2);
-            Console.SetError(sw2);
-
-            startCancelButton.Press();
-            // Should call with correct values
-            string result = sw2.ToString();
-
-
-
-            Assert.That(result, Is.EqualTo("Light is turned on\r\nPowerTube works with 700\r\n"));
-
+            _sut = new UserInterface(_powerButton, _timeButton, _startCancelButton, _door, _display, _light, _cooker);
         }
 
 
         [Test]
-        public void SetTime_StartButton_LightIsCalled()
+        public void Door_DoorOpenAndClose_CorrectOutput()
         {
-            powerButton.Press();
-            // Now in SetPower
-            timeButton.Press();
-            // Now in SetTime
-            startCancelButton.Press();
-            // Now cooking
+            // Act
+            _door.Open();
+            _door.Close();
 
-            string result = sw.ToString();
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("on")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("off")));
+        }
 
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\n"));
+
+        [Test]
+        public void PowerButton_ButtonPressedTwoTimes_CorrectOutput()
+        {
+            // Act
+            _powerButton.Press();
+            _powerButton.Press();
+
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
         }
 
         [Test]
-        public void Cooking_CookingIsDone_LightOffClearDisplay()
+        public void PowerButton_ButtonPressedThreeTimes_CorrectOutput()
         {
-            powerButton.Press();
-            // Now in SetPower
-            timeButton.Press();
-            // Now in SetTime
-            startCancelButton.Press();
-            // Now in cooking
-            sut.CookingIsDone();
-            string result = sw.ToString();
+            // Act
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
 
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\nDisplay cleared\r\nLight is turned off\r\n"));
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("150 W")));
         }
 
         [Test]
-        public void Cooking_DoorIsOpened_LightOn()
+        public void TimerButton_ButtonPressedThreeTimes_CorrectOutput()
         {
-            powerButton.Press();
-            // Now in SetPower
-            timeButton.Press();
-            // Now in SetTime
-            startCancelButton.Press();
-            // Now in cooking
+            // Arrange
+            _powerButton.Press();
 
-            // Open door
-            door.Open();
-            string result = sw.ToString();
+            // Act
+            _timeButton.Press();
+            _timeButton.Press();
+            _timeButton.Press();
 
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\nPowerTube turned off\r\nDisplay cleared\r\n"));
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("01:00")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("02:00")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
         }
 
         [Test]
-        public void Cooking_DoorIsOpened_DisplayCleared()
+        public void Timer_TimeSetToOneMinueWaitTwoSeconds_OutPutShows58SecondsRemaining()
         {
-            powerButton.Press();
-            // Now in SetPower
-            timeButton.Press();
-            // Now in SetTime
-            startCancelButton.Press();
-            // Now in cooking
+            // Arrange
+            _powerButton.Press();
 
-            // Open door
-            door.Open();
+            // Act
+            _timeButton.Press(); // set time to 1 minute
+            _startCancelButton.Press();
+            Thread.Sleep(2000); // wait 2 seconds to be certain
 
-            string result = sw.ToString();
-
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\nPowerTube turned off\r\nDisplay cleared\r\n"));
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<String>(text => text.Contains("00:58")));
         }
 
         [Test]
-        public void Cooking_CancelButton_CookerCalledLightOffDisplayCleared()
+        public void MainScenario_CorrectOutput()
         {
-            powerButton.Press();
-            // Now in SetPower
-            timeButton.Press();
-            // Now in SetTime
-            startCancelButton.Press();
-            // Now in cooking
+            // Act
+            _door.Open();
+            _door.Close();
+            
+            _powerButton.Press();
+            _powerButton.Press();
 
-            // Open door
-            startCancelButton.Press();
+            _timeButton.Press();
+            _timeButton.Press();
+            _timeButton.Press();
+            _startCancelButton.Press();
 
-            string result = sw.ToString();
 
-            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\nPowerTube turned off\r\nLight is turned off\r\nDisplay cleared\r\n"));
+            // Assert
+            _output.Received(2).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
+
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("01:00")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("02:00")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
         }
 
+        [Test]
+        public void Extension1_DoorOpenedBeforeCookingDone_OutputShowsPowerTubeTurnedOff()
+        {
+            // Arrange
+            _door.Open();
+            _door.Close();
+            _powerButton.Press();
+            _timeButton.Press();
+            _startCancelButton.Press();
+
+            // Act
+            _door.Open();
+
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
+        }
+
+        [Test]
+        public void Extension2_StartCancelButtonPressedBeforeCookingDone_OutputShowsPowerTubeTurnedOff()
+        {
+            // Arrange
+            _door.Open();
+            _door.Close();
+            _powerButton.Press();
+            _timeButton.Press();
+            _startCancelButton.Press();
+
+            // Act
+            _startCancelButton.Press();
+
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
+        }
     }
-
 }
