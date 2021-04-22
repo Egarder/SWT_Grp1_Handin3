@@ -118,7 +118,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void StartCancelBtnPressedState_SetTime() /// ============================================================
+        public void StartCancelBtnPressedState_SetTime()
         {
             _powerButton.Press();
             _timerButton.Press();
