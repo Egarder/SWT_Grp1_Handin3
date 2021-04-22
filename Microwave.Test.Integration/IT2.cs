@@ -64,28 +64,42 @@ namespace Microwave.Test.Integration
         {
             _powerButton.Press();
 
-
             _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Display shows: ")));
         }
 
         [Test]
-        public void TimeBtnPressedStateReady()
+        public void TimeBtnPressedState_SetPower()  /// ============================================================ FAILER
         {
+            _door.Open();
+            _door.Close();
+            _powerButton.Press();
+
             _timerButton.Press();
 
-            Assert.Pass();
+            _outputFake.Received(3).OutputLine(Arg.Is<string>(text => text.Contains("Display shows")));
         }
 
         [Test]
-        public void StartCancelBtnPressedStateReady()
+        public void StartCancelBtnPressedState_SetTime() /// ============================================================ FAILER
         {
+            _door.Open();
+            _door.Close();
+            _powerButton.Press();
+            _timerButton.Press();
+
             _startCancelButton.Press();
 
-            Assert.Pass();
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube works")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display shows")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+
         }
 
         [Test]
-        public void OpensDoorStateCooking()
+        public void OpensDoorState_Cooking()
         {
             _door.Open();
 
@@ -93,7 +107,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void StartCancelBtnPressedStateCooking()
+        public void StartCancelBtnPressedState_Cooking()
         {
             _startCancelButton.Press();
 
