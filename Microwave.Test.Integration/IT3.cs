@@ -158,19 +158,18 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void StartCancelBtnPressedState_Cooking() /// ============================================================ FAILER
+        public void StartCancelBtnPressedState_Cooking() 
         {
-            _door.Open();
-            _door.Close();
             _powerButton.Press();
             _timerButton.Press();
             _startCancelButton.Press();
 
             _startCancelButton.Press();
 
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+            _timerFake.Received(1).Stop();
+            _powerTubeFake.Received(1).TurnOff();
+            _displayFake.Received(1).Clear();
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
 
         }
 
