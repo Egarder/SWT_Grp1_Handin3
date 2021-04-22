@@ -42,9 +42,44 @@ namespace Microwave.Test.Integration
         public void OpensDoorStateReady()
         {
             _door.Open();
-            
+
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
+        }
+
+        [Test]
+        public void ClosesDoorStateReady()
+        {
+            _door.Open();
+            _door.Close();
+
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+        }
+
+        [Test]
+        public void PowerBtnPressedStateDoorIsOpen()
+        {
+            _powerButton.Press();
+
+
             Assert.Pass();
         }
+
+        [Test]
+        public void TimeBtnPressedStateReady()
+        {
+            _timerButton.Press();
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void StartCancelBtnPressedStateReady()
+        {
+            _startCancelButton.Press();
+
+            Assert.Pass();
+        }
+
         [Test]
         public void OpensDoorStateCooking()
         {
@@ -54,35 +89,10 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void ClosesDoorStateReady()
-        {
-            _door.Open();
-            _door.Close();
-
-            Assert.Pass();
-        }
-
-        [Test]
-        public void PowerBtnPressedStateDoorIsOpen()
-        {
-            Assert.Pass();
-        }
-
-        [Test]
-        public void TimeBtnPressedStateReady()
-        {
-            Assert.Pass();
-        }
-
-        [Test]
-        public void StartCancelBtnPressedStateReady()
-        {
-            Assert.Pass();
-        }
-
-        [Test]
         public void StartCancelBtnPressedStateCooking()
         {
+            _startCancelButton.Press();
+
             Assert.Pass();
         }
 
