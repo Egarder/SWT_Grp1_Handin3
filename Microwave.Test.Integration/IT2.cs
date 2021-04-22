@@ -35,6 +35,7 @@ namespace Microwave.Test.Integration
             _timerFake = Substitute.For<ITimer>();
             _cookController = new CookController(_timerFake,_displayFake,_powerTubeFake);
             _SUT = new UserInterface(_powerButton, _timerButton, _startCancelButton,_door,_displayFake,_light,_cookController);
+            
         }
 
         // Emil
@@ -58,43 +59,79 @@ namespace Microwave.Test.Integration
 
             _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("turned off")));
         }
-
         [Test]
-        public void PowerBtnPressedState_Ready()
+        public void PowerBtnPressedOnceState_Ready()
         {
             _powerButton.Press();
-
-            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Display shows: ")));
+            _displayFake.Received(1).ShowPower(50);
         }
 
         [Test]
-        public void TimeBtnPressedState_SetPower()  /// ============================================================ FAILER
+        public void PowerBtnPressedTwiceState_Ready() 
         {
-            //_door.Open();
-            //_door.Close();
+            _powerButton.Press();
+            _powerButton.Press();
+            _displayFake.Received(1).ShowPower(100); 
+        }
+        [Test]
+        public void PowerBtnPressed3State_Ready()
+        {
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _displayFake.Received(1).ShowPower(150);
+        }
+        [Test]
+        public void PowerBtnPressed7State_Ready()
+        {
+
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _displayFake.Received(1).ShowPower(50);
+        }
+
+        [Test]
+        public void TimeBtnPressedOnceState_SetPower() 
+        {
             _powerButton.Press();
 
             _timerButton.Press();
 
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display shows")));
+            _displayFake.Received(1).ShowTime(1,0);
+        }
+        [Test]
+        public void TimeBtnPressed3State_SetPower() 
+        {
+            _powerButton.Press();
+
+            _timerButton.Press();
+            _timerButton.Press();
+            _timerButton.Press();
+
+            _displayFake.Received(1).ShowTime(3, 0);
         }
 
         [Test]
-        public void StartCancelBtnPressedState_SetTime() /// ============================================================ FAILER
+        public void StartCancelBtnPressedState_SetTime() /// ============================================================
         {
-            _door.Open();
-            _door.Close();
             _powerButton.Press();
             _timerButton.Press();
 
             _startCancelButton.Press();
 
             _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube works")));
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display shows")));
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+            _timerFake.Received(1).Start(60);                                                                
+            _powerTubeFake.Received(1).TurnOn(50);
+
+            //_outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display shows")));
+            //_outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
+            //_outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
+            //_outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
 
         }
 
@@ -114,7 +151,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void StartCancelBtnPressedState_Cooking()
+        public void StartCancelBtnPressedState_Cooking() /// ============================================================ FAILER
         {
             _door.Open();
             _door.Close();
