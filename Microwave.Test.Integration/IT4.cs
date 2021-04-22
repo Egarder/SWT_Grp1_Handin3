@@ -95,8 +95,6 @@ namespace Microwave.Test.Integration
             _timeButton.Press();
 
             // Assert
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("01:00")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("02:00")));
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
         }
 
