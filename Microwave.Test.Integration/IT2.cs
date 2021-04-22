@@ -125,14 +125,23 @@ namespace Microwave.Test.Integration
 
             _startCancelButton.Press();
 
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
             _timerFake.Received(1).Start(60);                                                                
             _powerTubeFake.Received(1).TurnOn(50);
 
-            //_outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display shows")));
-            //_outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
-            //_outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
-            //_outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+            //Fake timer event OnTimerTick. Cookcontroller should call ShowTime at fake display. 
+            _timerFake.TimerTick += Raise.Event();
+            _displayFake.Received(1).ShowTime(1,0);
+
+            //Fake timer event expired. Cookcontroller should turnoff fake powertube. 
+            _timerFake.Expired += Raise.Event();
+            _powerTubeFake.Received(1).TurnOff();
+
+            //UI Should afterwards call fake displays Clear()
+            _displayFake.Received(1).Clear();
+
+            //UI should turnoff light:
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
 
         }
 
