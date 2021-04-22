@@ -10,7 +10,8 @@ using NSubstitute;
 
 namespace Microwave.Test.Integration
 {
-    public class Tests4
+    // Simon
+    public class IT4
     {
         private UserInterface sut;
 
@@ -48,7 +49,6 @@ namespace Microwave.Test.Integration
             Console.SetError(sw);
         }
 
-        // Simon
         [Test]
         public void Ready_DoorOpen_LightOnShowsOnOutput()
         {

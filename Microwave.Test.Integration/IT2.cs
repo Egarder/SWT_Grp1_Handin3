@@ -7,6 +7,7 @@ using NUnit.Framework;
 
 namespace Microwave.Test.Integration
 {
+    // Emil
     public class IT2
     {
         private Door _door;
@@ -38,8 +39,6 @@ namespace Microwave.Test.Integration
             _cookController.UI = _SUT;
 
         }
-
-        // Emil
 
 
 
@@ -118,11 +117,10 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void StartCancelBtnPressedState_SetTime() /// ============================================================
+        public void StartCancelBtnPressedState_SetTime()
         {
             _powerButton.Press();
             _timerButton.Press();
-
             _startCancelButton.Press();
 
             _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
