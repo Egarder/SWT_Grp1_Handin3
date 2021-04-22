@@ -121,7 +121,6 @@ namespace Microwave.Test.Integration
         {
             _powerButton.Press();
             _timerButton.Press();
-
             _startCancelButton.Press();
 
             _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
