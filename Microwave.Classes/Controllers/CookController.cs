@@ -65,7 +65,8 @@ namespace Microwave.Classes.Controllers
         {
             if (isCooking)
             {
-                int remaining = myTimer.TimeRemaining;
+                // timeremaining is given in msec. Converted to seconds for display!
+                int remaining = myTimer.TimeRemaining / 1000;
                 myDisplay.ShowTime(remaining / 60, remaining % 60);
             }
         }

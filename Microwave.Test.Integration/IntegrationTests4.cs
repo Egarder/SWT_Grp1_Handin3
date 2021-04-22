@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 using Microwave.Classes.Boundary;
 using Microwave.Classes.Controllers;
@@ -16,7 +17,7 @@ namespace Microwave.Test.Integration
         private Button powerButton;
         private Button timeButton;
         private Button startCancelButton;
-
+        private StringWriter sw;
         private Door door;
 
         private Display display;
@@ -41,6 +42,10 @@ namespace Microwave.Test.Integration
             cooker = new CookController(timer, display, powerTube);
             sut = new UserInterface(powerButton, timeButton, startCancelButton, door, display, light, cooker);
             cooker.UI = sut;
+
+            sw = new StringWriter();
+            Console.SetOut(sw);
+            Console.SetError(sw);
         }
 
         // Simon
@@ -49,11 +54,15 @@ namespace Microwave.Test.Integration
         {
             // This test that uut has subscribed to door opened, and works correctly
             // simulating the event through NSubstitute
-            door.Open();
-
             var sw = new StringWriter();
             Console.SetOut(sw);
             Console.SetError(sw);
+
+            door.Open();
+
+            string result = sw.ToString();
+
+            Assert.That(result,Is.EqualTo("Light is turned on\r\n"));
         }
 
         [Test]
@@ -61,9 +70,13 @@ namespace Microwave.Test.Integration
         {
             // This test that uut has subscribed to door opened and closed, and works correctly
             // simulating the event through NSubstitute
-            door.Opened += Raise.EventWith(this, EventArgs.Empty);
-            door.Closed += Raise.EventWith(this, EventArgs.Empty);
-            light.Received().TurnOff();
+
+            door.Open();
+            door.Close();
+
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Light is turned on\r\nLight is turned off\r\n"));
         }
 
         [Test]
@@ -71,19 +84,27 @@ namespace Microwave.Test.Integration
         {
             // This test that uut has subscribed to power button, and works correctly
             // simulating the events through NSubstitute
-            door.Opened += Raise.EventWith(this, EventArgs.Empty);
-            door.Closed += Raise.EventWith(this, EventArgs.Empty);
 
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            display.Received(1).ShowPower(Arg.Is<int>(50));
+            door.Open();
+            door.Close();
+
+            powerButton.Press();
+
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Light is turned on\r\nLight is turned off\r\nDisplay shows: 50 W\r\n"));
         }
 
         [Test]
         public void Ready_2PowerButton_PowerIs100()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            display.Received(1).ShowPower(Arg.Is<int>(100));
+
+            powerButton.Press();
+            powerButton.Press();
+
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 100 W\r\n"));
         }
 
         [Test]
@@ -91,9 +112,11 @@ namespace Microwave.Test.Integration
         {
             for (int i = 1; i <= 14; i++)
             {
-                powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+                powerButton.Press();
             }
-            display.Received(1).ShowPower(Arg.Is<int>(700));
+
+            string result = sw.ToString();
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 100 W\r\nDisplay shows: 150 W\r\nDisplay shows: 200 W\r\nDisplay shows: 250 W\r\nDisplay shows: 300 W\r\nDisplay shows: 350 W\r\nDisplay shows: 400 W\r\nDisplay shows: 450 W\r\nDisplay shows: 500 W\r\nDisplay shows: 550 W\r\nDisplay shows: 600 W\r\nDisplay shows: 650 W\r\nDisplay shows: 700 W\r\n"));
         }
 
         [Test]
@@ -101,119 +124,137 @@ namespace Microwave.Test.Integration
         {
             for (int i = 1; i <= 15; i++)
             {
-                powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+                powerButton.Press();
             }
-            // And then once more
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            display.Received(2).ShowPower(50);
+            string result = sw.ToString();
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 100 W\r\nDisplay shows: 150 W\r\nDisplay shows: 200 W\r\nDisplay shows: 250 W\r\nDisplay shows: 300 W\r\nDisplay shows: 350 W\r\nDisplay shows: 400 W\r\nDisplay shows: 450 W\r\nDisplay shows: 500 W\r\nDisplay shows: 550 W\r\nDisplay shows: 600 W\r\nDisplay shows: 650 W\r\nDisplay shows: 700 W\r\nDisplay shows: 50 W\r\n"));
         }
 
         [Test]
         public void SetPower_CancelButton_DisplayCleared()
         {
             // Also checks if TimeButton is subscribed
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
 
-            display.Received(1).Clear();
+            startCancelButton.Press();
+
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay cleared\r\n"));
         }
 
         [Test]
         public void SetPower_DoorOpened_DisplayCleared()
         {
             // Also checks if TimeButton is subscribed
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            door.Opened += Raise.EventWith(this, EventArgs.Empty);
+            door.Open();
 
-            display.Received(1).Clear();
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nLight is turned on\r\nDisplay cleared\r\n"));
         }
 
         [Test]
         public void SetPower_DoorOpened_LightOn()
         {
             // Also checks if TimeButton is subscribed
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            door.Opened += Raise.EventWith(this, EventArgs.Empty);
+            door.Open();
 
-            light.Received(1).TurnOn();
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nLight is turned on\r\nDisplay cleared\r\n"));
         }
 
         [Test]
         public void SetPower_TimeButton_TimeIs1()
         {
             // Also checks if TimeButton is subscribed
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
 
-            display.Received(1).ShowTime(Arg.Is<int>(1), Arg.Is<int>(0));
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\n"));
         }
 
         [Test]
         public void SetPower_2TimeButton_TimeIs2()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
+            timeButton.Press();
 
-            display.Received(1).ShowTime(Arg.Is<int>(2), Arg.Is<int>(0));
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nDisplay shows: 02:00\r\n"));
         }
 
         [Test]
         public void SetTime_StartButton_CookerIsCalled()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
             // Now in SetTime
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            startCancelButton.Press();
 
-            cooker.Received(1).StartCooking(50, 60);
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\n"));
         }
 
         [Test]
         public void SetTime_DoorOpened_DisplayCleared()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
             // Now in SetTime
-            door.Opened += Raise.EventWith(this, EventArgs.Empty);
+            door.Open();
 
-            display.Received().Clear();
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nDisplay cleared\r\n"));
         }
 
         [Test]
         public void SetTime_DoorOpened_LightOn()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
             // Now in SetTime
-            door.Opened += Raise.EventWith(this, EventArgs.Empty);
+            door.Open();
 
-            light.Received().TurnOn();
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nDisplay cleared\r\n"));
         }
 
         [Test]
         public void Ready_PowerAndTime_CookerIsCalledCorrectly()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
 
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
             // Now in SetTime
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
 
             // Should call with correct values
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            startCancelButton.Press();
 
-            cooker.Received(1).StartCooking(100, 120);
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 100 W\r\nDisplay shows: 01:00\r\nDisplay shows: 02:00\r\nLight is turned on\r\nPowerTube works with 100\r\n"));
         }
 
         [Test]
@@ -221,16 +262,22 @@ namespace Microwave.Test.Integration
         {
             for (int i = 50; i <= 700; i += 50)
             {
-                powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+                powerButton.Press();
             }
 
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
             // Now in SetTime
+            var sw2 = new StringWriter();
+            Console.SetOut(sw2);
+            Console.SetError(sw2);
 
+            startCancelButton.Press();
             // Should call with correct values
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            string result = sw2.ToString();
 
-            cooker.Received(1).StartCooking(700, 60);
+
+
+            Assert.That(result, Is.EqualTo("Light is turned on\r\nPowerTube works with 700\r\n"));
 
         }
 
@@ -238,109 +285,85 @@ namespace Microwave.Test.Integration
         [Test]
         public void SetTime_StartButton_LightIsCalled()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
             // Now in SetTime
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            startCancelButton.Press();
             // Now cooking
 
-            light.Received(1).TurnOn();
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\n"));
         }
 
         [Test]
-        public void Cooking_CookingIsDone_LightOff()
+        public void Cooking_CookingIsDone_LightOffClearDisplay()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
             // Now in SetTime
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            startCancelButton.Press();
             // Now in cooking
-
             sut.CookingIsDone();
-            light.Received(1).TurnOff();
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\nDisplay cleared\r\nLight is turned off\r\n"));
         }
 
         [Test]
-        public void Cooking_CookingIsDone_ClearDisplay()
+        public void Cooking_DoorIsOpened_LightOn()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
             // Now in SetTime
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            // Now in cooking
-
-            // Cooking is done
-            sut.CookingIsDone();
-            display.Received(1).Clear();
-        }
-
-        [Test]
-        public void Cooking_DoorIsOpened_CookerCalled()
-        {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            // Now in SetTime
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            startCancelButton.Press();
             // Now in cooking
 
             // Open door
-            door.Opened += Raise.EventWith(this, EventArgs.Empty);
+            door.Open();
+            string result = sw.ToString();
 
-            cooker.Received(1).Stop();
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\nPowerTube turned off\r\nDisplay cleared\r\n"));
         }
 
         [Test]
         public void Cooking_DoorIsOpened_DisplayCleared()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
             // Now in SetTime
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            startCancelButton.Press();
             // Now in cooking
 
             // Open door
-            door.Opened += Raise.EventWith(this, EventArgs.Empty);
+            door.Open();
 
-            display.Received(1).Clear();
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\nPowerTube turned off\r\nDisplay cleared\r\n"));
         }
 
         [Test]
-        public void Cooking_CancelButton_CookerCalled()
+        public void Cooking_CancelButton_CookerCalledLightOffDisplayCleared()
         {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            powerButton.Press();
             // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            timeButton.Press();
             // Now in SetTime
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            startCancelButton.Press();
             // Now in cooking
 
             // Open door
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
+            startCancelButton.Press();
 
-            cooker.Received(1).Stop();
+            string result = sw.ToString();
+
+            Assert.That(result, Is.EqualTo("Display shows: 50 W\r\nDisplay shows: 01:00\r\nLight is turned on\r\nPowerTube works with 50\r\nPowerTube turned off\r\nLight is turned off\r\nDisplay cleared\r\n"));
         }
-
-        [Test]
-        public void Cooking_CancelButton_LightCalled()
-        {
-            powerButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            // Now in SetPower
-            timeButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            // Now in SetTime
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-            // Now in cooking
-
-            // Open door
-            startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
-
-            light.Received(1).TurnOff();
-        }
-
 
     }
 
