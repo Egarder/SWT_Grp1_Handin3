@@ -44,7 +44,7 @@ namespace Microwave.Test.Integration
 
         //User sequences from sequence diagram. 
         [Test]
-        public void OpensDoorState_Ready()
+        public void OpensDoorState_Ready_LightOn()
         {
             _door.Open();
 
@@ -52,7 +52,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void ClosesDoorState_DoorIsOpen()
+        public void ClosesDoorState_DoorIsOpen_LightOff()
         {
             _door.Open();
             _door.Close();
@@ -60,21 +60,21 @@ namespace Microwave.Test.Integration
             _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("turned off")));
         }
         [Test]
-        public void PowerBtnPressedOnceState_Ready()
+        public void PowerBtnPressedOnceState_Ready_DisplayShowPower()
         {
             _powerButton.Press();
             _displayFake.Received(1).ShowPower(50);
         }
 
         [Test]
-        public void PowerBtnPressedTwiceState_Ready() 
+        public void PowerBtnPressedTwiceState_Ready_DisplayShowPower() 
         {
             _powerButton.Press();
             _powerButton.Press();
             _displayFake.Received(1).ShowPower(100); 
         }
         [Test]
-        public void PowerBtnPressed3State_Ready()
+        public void PowerBtnPressed3State_Ready_DisplayShowPower()
         {
             _powerButton.Press();
             _powerButton.Press();
@@ -82,7 +82,7 @@ namespace Microwave.Test.Integration
             _displayFake.Received(1).ShowPower(150);
         }
         [Test]
-        public void PowerBtnPressed7State_Ready()
+        public void PowerBtnPressed7State_Ready_DisplayShowPower()
         {
 
             _powerButton.Press();
@@ -96,7 +96,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void TimeBtnPressedOnceState_SetPower() 
+        public void TimeBtnPressedOnceState_SetPower_DisplayShowTime() 
         {
             _powerButton.Press();
 
@@ -105,7 +105,7 @@ namespace Microwave.Test.Integration
             _displayFake.Received(1).ShowTime(1,0);
         }
         [Test]
-        public void TimeBtnPressed3State_SetPower() 
+        public void TimeBtnPressed3State_SetPower_DisplayShowTime() 
         {
             _powerButton.Press();
 
@@ -117,7 +117,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void StartCancelBtnPressedState_SetTime_Light()
+        public void StartCancelBtnPressedState_SetTime_LightOn()
         {
             _powerButton.Press();
             _timerButton.Press();
@@ -138,7 +138,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void StartCancelBtnPressedState_SetTime_CookControllerCalls()
+        public void StartCancelBtnPressedState_SetTime_TimerTickExpire_CookControllerCalls()
         {
             _powerButton.Press();
             _timerButton.Press();
@@ -155,7 +155,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void StartCancelBtnPressedState_SetTime_UI()
+        public void StartCancelBtnPressedState_SetTime_TimerExpired_DisplayClear_LightTurnOff()
         {
             _powerButton.Press();
             _timerButton.Press();
@@ -184,7 +184,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void StartCancelBtnPressedState_Cooking() 
+        public void StartCancelBtnPressedState_Cooking_FakesReceivedCalls() 
         {
             _powerButton.Press();
             _timerButton.Press();
@@ -195,6 +195,17 @@ namespace Microwave.Test.Integration
             _timerFake.Received(1).Stop();
             _powerTubeFake.Received(1).TurnOff();
             _displayFake.Received(1).Clear();
+        }
+
+        [Test]
+        public void StartCancelBtnPressedState_Cooking_LightOff()
+        {
+            _powerButton.Press();
+            _timerButton.Press();
+            _startCancelButton.Press();
+
+            _startCancelButton.Press();
+
             _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
         }
 
