@@ -18,7 +18,7 @@ namespace Microwave.Test.Integration
         private IOutput _outputFake;
         private IPowerTube _powerTubeFake;
         private ITimer _timerFake;
-        private UserInterface _userInterface;
+        private UserInterface _SUT;
         private CookController _cookController;
 
         [SetUp]
@@ -34,14 +34,71 @@ namespace Microwave.Test.Integration
             _powerTubeFake = Substitute.For<IPowerTube>();
             _timerFake = Substitute.For<ITimer>();
             _cookController = new CookController(_timerFake,_displayFake,_powerTubeFake);
-            _userInterface = new UserInterface(_powerButton, _timerButton, _startCancelButton,_door,_displayFake,_light,_cookController);
+            _SUT = new UserInterface(_powerButton, _timerButton, _startCancelButton,_door,_displayFake,_light,_cookController);
         }
 
         // Emil
+
+
+
+        //User sequences from sequence diagram. 
         [Test]
-        public void MainScenario()
+        public void OpensDoorState_Ready()
         {
+            _door.Open();
+
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
+        }
+
+        [Test]
+        public void ClosesDoorState_DoorIsOpen()
+        {
+            _door.Open();
+            _door.Close();
+
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("turned off")));
+        }
+
+        [Test]
+        public void PowerBtnPressedState_Ready()
+        {
+            _powerButton.Press();
+
+
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Display shows: ")));
+        }
+
+        [Test]
+        public void TimeBtnPressedStateReady()
+        {
+            _timerButton.Press();
+
             Assert.Pass();
         }
+
+        [Test]
+        public void StartCancelBtnPressedStateReady()
+        {
+            _startCancelButton.Press();
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void OpensDoorStateCooking()
+        {
+            _door.Open();
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void StartCancelBtnPressedStateCooking()
+        {
+            _startCancelButton.Press();
+
+            Assert.Pass();
+        }
+
     }
 }
