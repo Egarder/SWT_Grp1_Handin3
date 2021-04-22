@@ -1,10 +1,14 @@
 using System;
+using System.Threading;
 using System.Xml.Linq;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Microwave.Classes.Boundary;
 using Microwave.Classes.Controllers;
 using Microwave.Classes.Interfaces;
 using NSubstitute;
 using NUnit.Framework;
+using IOutput = Microwave.Classes.Interfaces.IOutput;
+using Timer = Microwave.Classes.Boundary.Timer;
 
 namespace Microwave.Test.Integration
 {
@@ -42,9 +46,52 @@ namespace Microwave.Test.Integration
             _sut = new UserInterface(_powerButton, _timeButton, _startCancelButton, _door, _display, _light, _cooker);
         }
 
-        // Thomas
+
         [Test]
-        public void Test1()
+        public void Door_DoorOpenAndClose_CorrectOutput()
+        {
+            // Act
+            _door.Open();
+            _door.Close();
+
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("on")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("off")));
+        }
+
+
+        [Test]
+        public void PowerButton_ButtonPressedTwoTimes_CorrectOutput()
+        {
+            // Act
+            _powerButton.Press();
+            _powerButton.Press();
+
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
+        }
+
+        [Test]
+        public void TimerButton_ButtonPressedThreeTimes_CorrectOutput()
+        {
+            // Arrange
+            _powerButton.Press();
+
+            // Act
+            _timeButton.Press();
+            _timeButton.Press();
+            _timeButton.Press();
+
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("01:00")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("02:00")));
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
+        }
+
+
+        [Test]
+        public void MainScenario_CorrectOutput()
         {
             // Act
             _door.Open();
@@ -58,6 +105,8 @@ namespace Microwave.Test.Integration
             _timeButton.Press();
             _startCancelButton.Press();
 
+
+            // Assert
             _output.Received(2).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
 
@@ -67,6 +116,40 @@ namespace Microwave.Test.Integration
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("01:00")));
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("02:00")));
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
+        }
+
+        [Test]
+        public void Extension1_DoorOpenedBeforeCookingDone_OutputShowsPowerTubeTurnedOff()
+        {
+            // Arrange
+            _door.Open();
+            _door.Close();
+            _powerButton.Press();
+            _timeButton.Press();
+            _startCancelButton.Press();
+
+            // Act
+            _door.Open();
+
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
+        }
+
+        [Test]
+        public void Extension2_StartCancelButtonPressedBeforeCookingDone_OutputShowsPowerTubeTurnedOff()
+        {
+            // Arrange
+            _door.Open();
+            _door.Close();
+            _powerButton.Press();
+            _timeButton.Press();
+            _startCancelButton.Press();
+
+            // Act
+            _startCancelButton.Press();
+
+            // Assert
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
         }
     }
 }
