@@ -17,15 +17,15 @@ namespace Microwave.Classes.Boundary
         public void TurnOn(int power)
         {
             //changed from "1 to 100" to "50 to 700"
-            //if (power < 50 || 700 < power)
-            //{
-            //    throw new ArgumentOutOfRangeException("power", power, "Must be between 50 and 700 (incl.)");
-            //}
-
-            if (power < 1 || 100 < power)
+            if (power < 50 || 700 < power)
             {
-                throw new ArgumentOutOfRangeException("power", power, "Must be between 1 and 100 (incl.)");
+                throw new ArgumentOutOfRangeException("power", power, "Must be between 50 and 700 (incl.)");
             }
+
+            //if (power < 1 || 100 < power)
+            //{
+            //    throw new ArgumentOutOfRangeException("power", power, "Must be between 1 and 100 (incl.)");
+            //}
 
             if (IsOn)
             {
