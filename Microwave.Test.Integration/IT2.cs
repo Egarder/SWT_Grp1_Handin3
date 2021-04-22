@@ -38,8 +38,12 @@ namespace Microwave.Test.Integration
         }
 
         // Emil
+
+
+
+        //User sequences from sequence diagram. 
         [Test]
-        public void OpensDoorStateReady()
+        public void OpensDoorState_Ready()
         {
             _door.Open();
 
@@ -47,21 +51,21 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void ClosesDoorStateReady()
+        public void ClosesDoorState_DoorIsOpen()
         {
             _door.Open();
             _door.Close();
 
-            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("turned off")));
         }
 
         [Test]
-        public void PowerBtnPressedStateDoorIsOpen()
+        public void PowerBtnPressedState_Ready()
         {
             _powerButton.Press();
 
 
-            Assert.Pass();
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Display shows: ")));
         }
 
         [Test]
