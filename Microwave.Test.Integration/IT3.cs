@@ -1,184 +1,179 @@
-using System;
-using System.Threading;
 using System.Xml.Linq;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Microwave.Classes.Boundary;
 using Microwave.Classes.Controllers;
 using Microwave.Classes.Interfaces;
 using NSubstitute;
 using NUnit.Framework;
-using IOutput = Microwave.Classes.Interfaces.IOutput;
-using Timer = Microwave.Classes.Boundary.Timer;
 
 namespace Microwave.Test.Integration
 {
-    // Thomas
+    // Emil
     public class IT3
     {
-        private IDoor _door;
-        private IButton _powerButton;
-        private IButton _timeButton;
-        private IButton _startCancelButton;
-        private ILight _light;
-        private IDisplay _display;
-        private IOutput _output;
-        private IPowerTube _powerTube;
-        private ITimer _timer;
-        private ICookController _cooker;
-        private IUserInterface _sut;
+        private Door _door;
+        private Button _powerButton;
+        private Button _timerButton;
+        private Button _startCancelButton;
+        private Light _light;
+        private IDisplay _displayFake;
+        private IOutput _outputFake;
+        private IPowerTube _powerTubeFake;
+        private ITimer _timerFake;
+        private UserInterface _SUT;
+        private CookController _cookController;
 
         [SetUp]
         public void Setup()
         {
-            _output = Substitute.For<IOutput>();
-
-            _powerButton = new Button();
-            _timeButton = new Button();
-            _startCancelButton = new Button();
             _door = new Door();
-            _light = new Light(_output);
+            _powerButton = new Button();
+            _timerButton = new Button();
+            _startCancelButton = new Button();
+            _outputFake = Substitute.For<IOutput>();
+            _light = new Light(_outputFake);
+            _displayFake = Substitute.For<IDisplay>();
+            _powerTubeFake = Substitute.For<IPowerTube>();
+            _timerFake = Substitute.For<ITimer>();
+            _cookController = new CookController(_timerFake,_displayFake,_powerTubeFake);
+            _SUT = new UserInterface(_powerButton, _timerButton, _startCancelButton,_door,_displayFake,_light,_cookController);
+            _cookController.UI = _SUT;
 
-            _timer = new Timer();
-            _display = new Display(_output);
-            _powerTube = new PowerTube(_output);
-
-            _cooker = new CookController(_timer, _display, _powerTube);
-
-            _sut = new UserInterface(_powerButton, _timeButton, _startCancelButton, _door, _display, _light, _cooker);
         }
 
 
+
+        //User sequences from sequence diagram. 
         [Test]
-        public void Door_DoorOpenAndClose_CorrectOutput()
+        public void OpensDoorState_Ready()
         {
-            // Act
+            _door.Open();
+
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
+        }
+
+        [Test]
+        public void ClosesDoorState_DoorIsOpen()
+        {
             _door.Open();
             _door.Close();
 
-            // Assert
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("on")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("off")));
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("turned off")));
         }
-
-
         [Test]
-        public void PowerButton_ButtonPressedTwoTimes_CorrectOutput()
+        public void PowerBtnPressedOnceState_Ready()
         {
-            // Act
             _powerButton.Press();
-            _powerButton.Press();
-
-            // Assert
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
+            _displayFake.Received(1).ShowPower(50);
         }
 
         [Test]
-        public void PowerButton_ButtonPressedThreeTimes_CorrectOutput()
+        public void PowerBtnPressedTwiceState_Ready() 
         {
-            // Act
+            _powerButton.Press();
+            _powerButton.Press();
+            _displayFake.Received(1).ShowPower(100); 
+        }
+        [Test]
+        public void PowerBtnPressed3State_Ready()
+        {
             _powerButton.Press();
             _powerButton.Press();
             _powerButton.Press();
+            _displayFake.Received(1).ShowPower(150);
+        }
+        [Test]
+        public void PowerBtnPressed7State_Ready()
+        {
 
-            // Assert
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("150 W")));
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _displayFake.Received(1).ShowPower(50);
         }
 
         [Test]
-        public void TimerButton_ButtonPressedThreeTimes_CorrectOutput()
+        public void TimeBtnPressedOnceState_SetPower() 
         {
-            // Arrange
             _powerButton.Press();
 
-            // Act
-            _timeButton.Press();
-            _timeButton.Press();
-            _timeButton.Press();
+            _timerButton.Press();
 
-            // Assert
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("01:00")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("02:00")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
+            _displayFake.Received(1).ShowTime(1,0);
+        }
+        [Test]
+        public void TimeBtnPressed3State_SetPower() 
+        {
+            _powerButton.Press();
+
+            _timerButton.Press();
+            _timerButton.Press();
+            _timerButton.Press();
+
+            _displayFake.Received(1).ShowTime(3, 0);
         }
 
         [Test]
-        public void Timer_TimeSetToOneMinueWaitTwoSeconds_OutPutShows58SecondsRemaining()
+        public void StartCancelBtnPressedState_SetTime()
         {
-            // Arrange
             _powerButton.Press();
-
-            // Act
-            _timeButton.Press(); // set time to 1 minute
-            _startCancelButton.Press();
-            Thread.Sleep(2000); // wait 2 seconds to be certain
-
-            // Assert
-            _output.Received(1).OutputLine(Arg.Is<String>(text => text.Contains("00:58")));
-        }
-
-        [Test]
-        public void MainScenario_CorrectOutput()
-        {
-            // Act
-            _door.Open();
-            _door.Close();
-            
-            _powerButton.Press();
-            _powerButton.Press();
-
-            _timeButton.Press();
-            _timeButton.Press();
-            _timeButton.Press();
+            _timerButton.Press();
             _startCancelButton.Press();
 
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
+            _timerFake.Received(1).Start(60);                                                                
+            _powerTubeFake.Received(1).TurnOn(50);
 
-            // Assert
-            _output.Received(2).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+            //Fake timer event OnTimerTick. Cookcontroller should call ShowTime at fake display. 
+            _timerFake.TimerTick += Raise.Event();
+            _displayFake.Received(1).ShowTime(1,0);
 
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
+            //Fake timer event expired. Cookcontroller should turnoff fake powertube. 
+            _timerFake.Expired += Raise.Event();
+            _powerTubeFake.Received(1).TurnOff();
 
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("01:00")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("02:00")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
+            //UI Should afterwards call fake displays Clear()
+            _displayFake.Received(1).Clear();
+
+            //UI should turnoff light:
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+
         }
 
         [Test]
-        public void Extension1_DoorOpenedBeforeCookingDone_OutputShowsPowerTubeTurnedOff()
+        public void OpensDoorState_Cooking() /// ============================================================ FAILER
         {
-            // Arrange
             _door.Open();
             _door.Close();
             _powerButton.Press();
-            _timeButton.Press();
+            _timerButton.Press();
             _startCancelButton.Press();
 
-            // Act
             _door.Open();
 
-            // Assert
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
         }
 
         [Test]
-        public void Extension2_StartCancelButtonPressedBeforeCookingDone_OutputShowsPowerTubeTurnedOff()
+        public void StartCancelBtnPressedState_Cooking() /// ============================================================ FAILER
         {
-            // Arrange
             _door.Open();
             _door.Close();
             _powerButton.Press();
-            _timeButton.Press();
+            _timerButton.Press();
             _startCancelButton.Press();
 
-            // Act
             _startCancelButton.Press();
 
-            // Assert
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
+
         }
+
     }
 }
