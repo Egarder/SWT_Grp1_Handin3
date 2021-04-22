@@ -170,7 +170,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void OpensDoorState_Cooking() 
+        public void OpensDoorState_Cooking_FakesReceivedCalls() 
         {
             _powerButton.Press();
             _timerButton.Press();
