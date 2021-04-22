@@ -1,8 +1,11 @@
+using System;
+using System.IO;
 using System.Xml.Linq;
 using Microwave.Classes.Boundary;
 using Microwave.Classes.Controllers;
 using Microwave.Classes.Interfaces;
 using NUnit.Framework;
+using NSubstitute;
 
 namespace Microwave.Test.Integration
 {
@@ -31,6 +34,7 @@ namespace Microwave.Test.Integration
             startCancelButton = new Button();
             door = new Door();
             timer = new Timer();
+            output = new Output();
             powerTube = new PowerTube(output);
             light = new Light(output);
             display = new Display(output);
@@ -45,8 +49,11 @@ namespace Microwave.Test.Integration
         {
             // This test that uut has subscribed to door opened, and works correctly
             // simulating the event through NSubstitute
-            door.Open()
-            output.r
+            door.Open();
+
+            var sw = new StringWriter();
+            Console.SetOut(sw);
+            Console.SetError(sw);
         }
 
         [Test]
@@ -251,7 +258,7 @@ namespace Microwave.Test.Integration
             startCancelButton.Pressed += Raise.EventWith(this, EventArgs.Empty);
             // Now in cooking
 
-            uut.CookingIsDone();
+            sut.CookingIsDone();
             light.Received(1).TurnOff();
         }
 
@@ -266,7 +273,7 @@ namespace Microwave.Test.Integration
             // Now in cooking
 
             // Cooking is done
-            uut.CookingIsDone();
+            sut.CookingIsDone();
             display.Received(1).Clear();
         }
 
@@ -337,7 +344,4 @@ namespace Microwave.Test.Integration
 
     }
 
-}
-
-    }
 }
