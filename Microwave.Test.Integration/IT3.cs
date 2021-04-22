@@ -144,18 +144,17 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void OpensDoorState_Cooking() /// ============================================================ FAILER
+        public void OpensDoorState_Cooking() 
         {
-            _door.Open();
-            _door.Close();
             _powerButton.Press();
             _timerButton.Press();
             _startCancelButton.Press();
 
             _door.Open();
 
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
-            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
+            _timerFake.Received(1).Stop();
+            _powerTubeFake.Received(1).TurnOff();
+            _displayFake.Received(1).Clear();
         }
 
         [Test]
