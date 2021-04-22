@@ -122,9 +122,12 @@ namespace Microwave.Test.Integration
             _timerButton.Press();
             _startCancelButton.Press();
 
+            _startCancelButton.Press();
 
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("PowerTube turned off")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
+            _outputFake.Received().OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
 
-            Assert.Pass();
         }
 
     }
