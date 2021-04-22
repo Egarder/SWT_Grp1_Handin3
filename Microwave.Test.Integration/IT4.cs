@@ -69,7 +69,6 @@ namespace Microwave.Test.Integration
             _powerButton.Press();
 
             // Assert
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
         }
 
@@ -81,9 +80,6 @@ namespace Microwave.Test.Integration
             _powerButton.Press();
             _powerButton.Press();
 
-            // Assert
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("50 W")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("100 W")));
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("150 W")));
         }
 
@@ -99,8 +95,6 @@ namespace Microwave.Test.Integration
             _timeButton.Press();
 
             // Assert
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("01:00")));
-            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("02:00")));
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
         }
 
