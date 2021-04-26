@@ -209,7 +209,7 @@ namespace Microwave.Test.Integration
             _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
         }
 
-        //Extension tests:
+        //======================================================================= Extension tests:
 
         //[Extension: 1. User pressed start-cancel button during setup]
         [Test]
