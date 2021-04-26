@@ -76,6 +76,7 @@ namespace Microwave.Test.Integration
             _displayFake.Received(1).ShowPower(100);
             _displayFake.Received(1).ShowPower(150);
         }
+
         [Test]
         public void PowerBtnPressedState_Ready_DisplayShowPower_BoundaryCheck()
         {
