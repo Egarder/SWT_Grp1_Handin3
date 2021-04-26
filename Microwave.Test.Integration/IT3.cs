@@ -65,34 +65,38 @@ namespace Microwave.Test.Integration
             _powerButton.Press();
             _displayFake.Received(1).ShowPower(50);
         }
-
-        [Test]
-        public void PowerBtnPressedTwiceState_Ready_DisplayShowPower() 
-        {
-            _powerButton.Press();
-            _powerButton.Press();
-            _displayFake.Received(1).ShowPower(100); 
-        }
         [Test]
         public void PowerBtnPressed3State_Ready_DisplayShowPower()
         {
             _powerButton.Press();
             _powerButton.Press();
             _powerButton.Press();
+
+            _displayFake.Received(1).ShowPower(50);
+            _displayFake.Received(1).ShowPower(100);
             _displayFake.Received(1).ShowPower(150);
         }
         [Test]
-        public void PowerBtnPressed7State_Ready_DisplayShowPower()
+        public void PowerBtnPressedState_Ready_DisplayShowPower_BoundaryCheck()
         {
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
 
-            _powerButton.Press();
-            _powerButton.Press();
-            _powerButton.Press();
-            _powerButton.Press();
-            _powerButton.Press();
-            _powerButton.Press();
-            _powerButton.Press();
-            _displayFake.Received(1).ShowPower(50);
+            _displayFake.Received(1).ShowPower(700);
+            _displayFake.Received(2).ShowPower(50);
         }
 
         [Test]
