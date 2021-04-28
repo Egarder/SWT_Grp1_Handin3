@@ -6,6 +6,7 @@ using Microwave.Classes.Boundary;
 using Microwave.Classes.Controllers;
 using Microwave.Classes.Interfaces;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using IOutput = Microwave.Classes.Interfaces.IOutput;
 using Timer = Microwave.Classes.Boundary.Timer;
@@ -83,6 +84,7 @@ namespace Microwave.Test.Integration
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("150 W")));
         }
 
+
         [Test]
         public void TimerButton_ButtonPressedThreeTimes_CorrectOutput()
         {
@@ -98,6 +100,8 @@ namespace Microwave.Test.Integration
             _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("03:00")));
         }
 
+
+
         [Test]
         public void Timer_TimeSetToOneMinueWaitTwoSeconds_OutPutShows58SecondsRemaining()
         {
@@ -107,10 +111,10 @@ namespace Microwave.Test.Integration
             // Act
             _timeButton.Press(); // set time to 1 minute
             _startCancelButton.Press();
-            Thread.Sleep(2000); // wait 2 seconds to be certain
+            Thread.Sleep(2200); // wait a little more than 2 seconds to be certain
 
             // Assert
-            _output.Received(1).OutputLine(Arg.Is<String>(text => text.Contains("00:58")));
+            _output.Received(1).OutputLine(Arg.Is<String>(text => text.Contains("00:58"))); // Assert that 2 seconds have passed
         }
 
         [Test]
@@ -142,7 +146,30 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void Extension1_DoorOpenedBeforeCookingDone_OutputShowsPowerTubeTurnedOff()
+        public void Extension1_SetPower_CancelButton_DisplayCleared()
+        {
+            _powerButton.Press();
+
+            _startCancelButton.Press();
+
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
+        }
+
+        [Test]
+        public void Extension2_SetPowerTimeButtonPressedDoorOpened_DisplayCleared()
+        {
+            _powerButton.Press();
+            _timeButton.Press();
+
+            _door.Open();
+
+            _output.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Display cleared")));
+        }
+
+
+
+        [Test]
+        public void Extension3_DoorOpenedBeforeCookingDone_OutputShowsPowerTubeTurnedOff()
         {
             // Arrange
             _door.Open();
@@ -159,7 +186,7 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void Extension2_StartCancelButtonPressedBeforeCookingDone_OutputShowsPowerTubeTurnedOff()
+        public void Extension4_StartCancelButtonPressedBeforeCookingDone_OutputShowsPowerTubeTurnedOff()
         {
             // Arrange
             _door.Open();

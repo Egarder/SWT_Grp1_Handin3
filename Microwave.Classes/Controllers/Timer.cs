@@ -26,7 +26,7 @@ namespace Microwave.Classes.Boundary
         {
             //time is given in seconds. timeremaining needs to be in msec
             //TimeRemaining = time;
-            TimeRemaining = time*1000;
+            TimeRemaining = time;
             timer.Enabled = true;
         }
 
