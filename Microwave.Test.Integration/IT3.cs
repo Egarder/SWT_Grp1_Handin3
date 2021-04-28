@@ -40,8 +40,6 @@ namespace Microwave.Test.Integration
 
         }
 
-
-
         //User sequences from sequence diagram. 
         [Test]
         public void OpensDoorState_Ready_LightOn()
