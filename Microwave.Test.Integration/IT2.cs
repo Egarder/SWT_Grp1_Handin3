@@ -49,5 +49,10 @@ namespace Microwave.Test.Integration
             _output.Received(1).OutputLine("Light is turned off");
             //skriv til 2
         }
+        [Test]
+        public void Light_DoorClose_LightOff()
+        {
+
+        }
     }
 }
