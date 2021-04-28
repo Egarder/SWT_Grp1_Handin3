@@ -65,26 +65,21 @@ namespace Microwave.Test.Integration
             _powerButton.Press();
             _displayFake.Received(1).ShowPower(50);
         }
-
-        [Test]
-        public void PowerBtnPressedTwiceState_Ready_DisplayShowPower() 
-        {
-            _powerButton.Press();
-            _powerButton.Press();
-            _displayFake.Received(1).ShowPower(100); 
-        }
         [Test]
         public void PowerBtnPressed3State_Ready_DisplayShowPower()
         {
             _powerButton.Press();
             _powerButton.Press();
             _powerButton.Press();
+
+            _displayFake.Received(1).ShowPower(50);
+            _displayFake.Received(1).ShowPower(100);
             _displayFake.Received(1).ShowPower(150);
         }
-        [Test]
-        public void PowerBtnPressed7State_Ready_DisplayShowPower()
-        {
 
+        [Test]
+        public void PowerBtnPressedState_Ready_DisplayShowPower_BoundaryCheck()
+        {
             _powerButton.Press();
             _powerButton.Press();
             _powerButton.Press();
@@ -92,7 +87,17 @@ namespace Microwave.Test.Integration
             _powerButton.Press();
             _powerButton.Press();
             _powerButton.Press();
-            _displayFake.Received(1).ShowPower(50);
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+            _powerButton.Press();
+
+            _displayFake.Received(1).ShowPower(700);
+            _displayFake.Received(2).ShowPower(50);
         }
 
         [Test]
@@ -209,5 +214,61 @@ namespace Microwave.Test.Integration
             _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));
         }
 
+        //======================================================================= Extension tests:
+
+        //[Extension: 1. User pressed start-cancel button during setup]
+        [Test]
+        public void State_SetPower_Extension1StartCancelBtnPressed()
+        {
+            _powerButton.Press();
+            _powerButton.Press();
+
+            _startCancelButton.Press();
+
+            _displayFake.Received(1).Clear();
+        }
+
+        //[Extension 2: The user opens the Door during setup]
+        [Test]
+        public void State_SetPower_Extension2DoorOpens()
+        {
+            _powerButton.Press();
+            _powerButton.Press();
+
+            _door.Open();
+            
+            _displayFake.Received(1).Clear();
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));
+        }
+
+        //[Extension 3: The user presses the Start-Cancel button during cooking]
+        [Test]
+        public void State_Cooking_Extension3StartCancelBtn()
+        {
+            _powerButton.Press();
+            _timerButton.Press();
+            _startCancelButton.Press();
+
+            _startCancelButton.Press();
+
+            _powerTubeFake.Received(1).TurnOff(); //Powetube turned off
+            _displayFake.Received(1).Clear();//Display is blanked
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned off")));//Light goes off
+        }
+
+        //[Extension 4: The user opens the Door during cooking]
+        [Test]
+        public void State_Cooking_Extension4DoorOpens()
+        {
+            _powerButton.Press();
+            _timerButton.Press();
+            _startCancelButton.Press();
+
+            _door.Open();
+
+            _powerTubeFake.Received(1).TurnOff(); //Powetube turned off
+            _displayFake.Received(1).Clear();//Display is blanked
+            _outputFake.Received(1).OutputLine(Arg.Is<string>(text => text.Contains("Light is turned on")));//Light goes off
+        }
     }
 }
