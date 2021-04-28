@@ -52,7 +52,12 @@ namespace Microwave.Test.Integration
         [Test]
         public void Light_DoorClose_LightOff()
         {
-
+            //Arrange
+            _door.Open();
+            //Act
+            _door.Close();
+            //Assert
+            _output.Received(1).OutputLine("Light is turned off");
         }
     }
 }
