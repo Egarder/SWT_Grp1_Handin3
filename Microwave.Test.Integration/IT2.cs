@@ -47,43 +47,7 @@ namespace Microwave.Test.Integration
             //Check on light after door event
             _output.Received(1).OutputLine("Light is turned on");
             _output.Received(1).OutputLine("Light is turned off");
-        }
-        [Test]
-        public void PowerBtn_IsPressed_WattsIsFifty()
-        {
-            //Arrange
-            fakePowerLevel = 50;
-            //Act
-            _powerButton.Press();
-            //Assert
-            _display.Received(1).ShowPower(fakePowerLevel);
-        }
-
-        [Test]
-        public void TimeBtn_IsPressed_TimeIsOne()
-        {
-            //Arrange
-            _powerButton.Press();
-            fakeTime = 1;
-            //Act
-            _timeButton.Press();
-            //Assert
-            _display.Received(1).ShowTime(fakeTime, 0);
-        }
-
-        [Test]
-        public void StartCancelBtn_IsPressed_LightOnStartCooking()
-        {
-            //Arrange
-            fakePowerLevel = 50;
-            fakeTime = 60;
-            _powerButton.Press();
-            _timeButton.Press();
-            //Act
-            _startCancelButton.Press();
-            //Assert
-            _output.Received(1).OutputLine("Light is turned on");
-            _cookController.Received(1).StartCooking(fakePowerLevel, fakeTime);
+            //skriv til 2
         }
     }
 }
