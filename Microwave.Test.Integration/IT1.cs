@@ -83,7 +83,7 @@ namespace Microwave.Test.Integration
         {
             //Arrange
             fakePowerLevel = 50;
-            fakeTime = 60;
+            fakeTime = 60000;
             _powerButton.Press();
             _timeButton.Press();
             //Act
