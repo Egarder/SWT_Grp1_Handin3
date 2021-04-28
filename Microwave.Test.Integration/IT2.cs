@@ -37,17 +37,13 @@ namespace Microwave.Test.Integration
         }
 
         [Test]
-        public void Door_OpenCloseDoor_EventRaised()
+        public void Light_DoorOpen_LightOn()
         {
             //Act
             _door.Open();
-            _door.Close();
 
             //Assert
-            //Check on light after door event
             _output.Received(1).OutputLine("Light is turned on");
-            _output.Received(1).OutputLine("Light is turned off");
-            //skriv til 2
         }
         [Test]
         public void Light_DoorClose_LightOff()
