@@ -138,7 +138,7 @@ namespace Microwave.Test.Integration
             _timerButton.Press();
             _startCancelButton.Press();
 
-            _timerFake.Received(1).Start(60);
+            _timerFake.Received(1).Start(60000);
             _powerTubeFake.Received(1).TurnOn(50);
         }
 
