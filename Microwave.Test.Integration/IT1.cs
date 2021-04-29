@@ -20,8 +20,6 @@ namespace Microwave.Test.Integration
         private ILight _light;
         private IDisplay _display;
         private UserInterface sut;
-        private int fakePowerLevel;
-        private int fakeTime;
         private ICookController _cookController;
 
         [SetUp]
@@ -58,12 +56,10 @@ namespace Microwave.Test.Integration
         [Test]
         public void PowerBtn_BtnPressed_ShowPower()
         {
-            //Arrange
-            fakePowerLevel = 50;
             //Act
             _powerButton.Press();
             //Assert
-            _display.Received(1).ShowPower(fakePowerLevel);
+            _display.Received(1).ShowPower(Arg.Any<int>());
         }
 
         [Test]
@@ -71,26 +67,23 @@ namespace Microwave.Test.Integration
         {
             //Arrange
             _powerButton.Press();
-            fakeTime = 1;
             //Act
             _timeButton.Press();
             //Assert
-            _display.Received(1).ShowTime(fakeTime, 0);
+            _display.Received(1).ShowTime(Arg.Any<int>(), Arg.Any<int>());
         }
 
         [Test]
         public void StartCancelBtn_IsPressed_LightOnStartCooking()
         {
             //Arrange
-            fakePowerLevel = 50;
-            fakeTime = 60000;
             _powerButton.Press();
             _timeButton.Press();
             //Act
             _startCancelButton.Press();
             //Assert
             _light.Received(1).TurnOn();
-            _cookController.Received(1).StartCooking(fakePowerLevel, fakeTime);
+            _cookController.Received(1).StartCooking(Arg.Any<int>(),Arg.Any<int>());
         }
     }
 }

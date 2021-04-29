@@ -19,8 +19,6 @@ namespace Microwave.Test.Integration
         private IOutput _output;
         private UserInterface sut;
         private ICookController _cookController;
-        private int fakePowerLevel;
-        private int fakeTime;
 
         [SetUp]
         public void Setup()
